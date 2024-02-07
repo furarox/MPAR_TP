@@ -3,6 +3,7 @@ from gramLexer import gramLexer
 from gramListener import gramListener
 from gramParser import gramParser
 import sys
+from mdp_syntax import gramSyntax
 
 
 class gramPrintListener(gramListener):
@@ -42,7 +43,19 @@ def main(argv):
     printer = gramPrintListener()
     walker = ParseTreeWalker()
     walker.walk(printer, tree)
-
+    state = gramSyntax()
+    walker.walk(state, tree)
+    print(state.states)
+    print(state.actions)
+    print(state.trans_act)
+    print(state.trans_noact)
+    state.init_run('S0')
+    while True:
+        a = input()
+        if a == '':
+            state.run()
+        else:
+            state.run(a)
 
 if __name__ == '__main__':
     main(sys.argv)
