@@ -57,7 +57,7 @@ def graphDrawer(state: gramSyntax):
         for dst, w in item:
             dep = key
             G.add_edge(dep, dst)
-            label_edges[(dep, dst)] = str(w)
+            label_edges[(dep, dst)] = str(round(w, 2))
 
     for key, item in state.trans_act.items():
         dep, act = key
@@ -66,9 +66,9 @@ def graphDrawer(state: gramSyntax):
         label_edges[(dep, act_summit)] = act
         for dst, w in item:
             G.add_edge(act_summit, dst)
-            label_edges[(act_summit, dst)] = str(w)
+            label_edges[(act_summit, dst)] = str(round(w, 2))
 
-    pos = nx.spring_layout(G)
+    pos = nx.kamada_kawai_layout(G)
     nx.draw_networkx_nodes(G, pos,
                            nodelist=state_summit,
                            node_shape='o',
@@ -76,7 +76,7 @@ def graphDrawer(state: gramSyntax):
                            node_size=300)
     nx.draw_networkx_nodes(G, pos,
                            nodelist=actions_summit,
-                           node_color='yellow',
+                           node_color='black',
                            node_shape='o',
                            node_size=50)
 
@@ -94,12 +94,14 @@ def graphDrawer(state: gramSyntax):
     d = nx.draw_networkx_edge_labels(G, pos,
                                      edge_labels=label_edges)
 
-    offset(d, pos, asp=get_aspect(plt.gca()))
+    current_summit = state.c_state
+    nx.draw_networkx_nodes(G, pos,
+                           nodelist=[current_summit],
+                           node_shape='o',
+                           node_color='red',
+                           node_size=300)
 
-    print(state_summit)
-    print(actions_summit)
-    print(labels)
-    print(label_edges)
+    offset(d, pos, asp=get_aspect(plt.gca()))
 
     plt.title("")
     plt.show()

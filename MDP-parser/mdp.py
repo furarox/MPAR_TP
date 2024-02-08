@@ -58,6 +58,7 @@ def main(argv):
             state.run()
         else:
             state.run(a)
+        graphDrawer(state)
 
 
 if __name__ == '__main__':
