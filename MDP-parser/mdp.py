@@ -4,6 +4,7 @@ from gramListener import gramListener
 from gramParser import gramParser
 import sys
 from mdp_syntax import gramSyntax
+from drawgraph import graphDrawer
 
 
 class gramPrintListener(gramListener):
@@ -50,12 +51,14 @@ def main(argv):
     print(state.trans_act)
     print(state.trans_noact)
     state.init_run('S0')
+    graphDrawer(state)
     while True:
         a = input()
         if a == '':
             state.run()
         else:
             state.run(a)
+
 
 if __name__ == '__main__':
     main(sys.argv)

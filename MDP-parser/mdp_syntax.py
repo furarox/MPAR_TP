@@ -10,10 +10,12 @@ class gramSyntax(gramListener):
         self.trans_act = {}
         self.trans_noact = {}
         self.c_state = None
+        self.states_action = {}
 
     def enterDefstates(self, ctx):
         for x in ctx.ID():
             self.states[str(x)] = 0
+            self.states_action[str(x)] = []
 
         if len(self.states) != len(set(self.states)):
             raise ValueError("Un même état est défini plusieurs fois")
@@ -46,6 +48,7 @@ class gramSyntax(gramListener):
         s = sum(weight)
         if (dep, act) in self.trans_act:
             raise ValueError("Une transition avec action sur un même état a été déclaré deux fois")
+        self.states_action[dep].append(act)
         self.trans_act[(dep, act)] = []
 
         for a, w in zip(tmp, weight):
@@ -77,7 +80,7 @@ class gramSyntax(gramListener):
             self.trans_noact[dep].append((a, w / s))
 
     def run(self, action=None):
-        if action not in self.actions and action is not None:
+        if action is not None and action not in self.states_action[self.c_state]:
             raise ValueError("L'action choisie n'est pas dans l'alphabet déclaré")
 
         if self.states[self.c_state] == 1:
@@ -119,3 +122,8 @@ class gramSyntax(gramListener):
         elif self.states[self.c_state] == 2:
             actions = [x[1] for x in self.trans_act if x[0] == self.c_state]
             print(f"L'état actuel est décisionnel, entrer l'action à choisir parmi les différentes actions suivantes : {actions}")
+
+    def check(self):
+        for v in self.states:
+            if v == 0:
+                raise ValueError("Un état n'a pas de transitions définies")
