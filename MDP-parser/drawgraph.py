@@ -92,7 +92,8 @@ def graphDrawer(state: gramSyntax):
                            connectionstyle='arc3,rad=0.2')
 
     d = nx.draw_networkx_edge_labels(G, pos,
-                                     edge_labels=label_edges)
+                                     edge_labels=label_edges,
+                                     bbox={'boxstyle': 'round', 'ec': (1.0, 1.0, 1.0), 'fc': (1.0, 1.0, 1.0), 'alpha': .5})
 
     current_summit = state.c_state
     nx.draw_networkx_nodes(G, pos,
