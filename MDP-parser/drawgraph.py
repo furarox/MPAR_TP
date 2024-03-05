@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import networkx as nx
 from mdp_syntax import gramSyntax
+import matplotlib
+matplotlib.use("TkAgg")
 
 
 rad = .2
@@ -104,5 +106,4 @@ def graphDrawer(state: gramSyntax):
 
     offset(d, pos, asp=get_aspect(plt.gca()))
 
-    plt.title("")
-    plt.show()
+    plt.savefig('test.png')

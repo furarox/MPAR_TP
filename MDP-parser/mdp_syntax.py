@@ -79,8 +79,8 @@ class gramSyntax(gramListener):
                 raise ValueError("Un poids a été défini négatif")
             self.trans_noact[dep].append((a, w / s))
 
-    def run(self, action=None):
-        if action is not None and action not in self.states_action[self.c_state]:
+    def run(self, action=""):
+        if action != "" and action not in self.states_action[self.c_state]:
             raise ValueError("L'action choisie n'est pas dans l'alphabet déclaré")
 
         if self.states[self.c_state] == 1:

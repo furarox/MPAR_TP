@@ -4,7 +4,6 @@ from gramListener import gramListener
 from gramParser import gramParser
 import sys
 from mdp_syntax import gramSyntax
-from drawgraph import graphDrawer
 
 
 class gramPrintListener(gramListener):
@@ -35,7 +34,8 @@ class gramPrintListener(gramListener):
               + str(ids) + " with weights " + str(weights))
 
 
-def main(argv):
+def init_graph(argv):
+    # Init phase
     input_stream = FileStream(argv[1])
     lexer = gramLexer(input_stream)
     stream = CommonTokenStream(lexer)
@@ -51,15 +51,9 @@ def main(argv):
     print(state.trans_act)
     print(state.trans_noact)
     state.init_run('S0')
-    graphDrawer(state)
-    while True:
-        a = input()
-        if a == '':
-            state.run()
-        else:
-            state.run(a)
-        graphDrawer(state)
+
+    return state
 
 
 if __name__ == '__main__':
-    main(sys.argv)
+    init_graph(sys.argv)
