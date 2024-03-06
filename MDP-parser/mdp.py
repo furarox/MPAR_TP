@@ -50,7 +50,6 @@ def init_graph(argv):
     print(state.actions)
     print(state.trans_act)
     print(state.trans_noact)
-    state.init_run('S0')
 
     return state
 

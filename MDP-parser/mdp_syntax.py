@@ -109,19 +109,23 @@ class gramSyntax(gramListener):
 
         if self.states[self.c_state] == 1:
             print("L'état actuel est probabliste, entrer 'enter' pour passer au prochain état")
+            return [""]
 
         elif self.states[self.c_state] == 2:
             actions = [x[1] for x in self.trans_act if x[0] == self.c_state]
             print(f"L'état actuel est décisionnel, entrer l'action à choisir parmi les différentes actions suivantes : {actions}")
+            return actions
 
     def init_run(self, state):
         self.c_state = state
         if self.states[self.c_state] == 1:
             print("L'état actuel est probabliste, entrer 'enter' pour passer au prochain état")
+            return [""]
 
         elif self.states[self.c_state] == 2:
             actions = [x[1] for x in self.trans_act if x[0] == self.c_state]
             print(f"L'état actuel est décisionnel, entrer l'action à choisir parmi les différentes actions suivantes : {actions}")
+            return actions
 
     def check(self):
         for v in self.states:
