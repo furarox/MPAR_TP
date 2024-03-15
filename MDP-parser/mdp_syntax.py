@@ -16,6 +16,10 @@ class gramSyntax(gramListener):
         self.pred = {}
 
     def enterDefstates(self, ctx):
+        print("début")
+        for x in ctx.INT() :
+            print(str(x))
+        print("fin")
         for x in ctx.ID():
             self.states[str(x)] = 0
             self.states_action[str(x)] = []
