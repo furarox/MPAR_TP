@@ -12,11 +12,11 @@ def afficher_image():
         if action not in state.states:
             return None
         else:
-            alphabet = state.init_run(action)
+            alphabet = state.init_run(action, chemin)
     elif action not in alphabet:
         return None
     else:
-        alphabet = state.run(action)
+        alphabet = state.run(action, chemin, histo_proba)
     graphDrawer(state)
     # Fonction pour afficher l'image après avoir cliqué sur le bouton
     # Charge l'image avec PIL
@@ -31,15 +31,24 @@ def afficher_image():
 
     # Change le texte du label et du bouton
     if alphabet == [""]:
-        label.config(text="L'état actuel est probabiliste")
+        label.config(text=f"L'état actuel est probabiliste, le chemin parcouru est {chemin[-10:]}, avec une proba de {proba():e}")
     else:
-        label.config(text=f'Veuillez choisir une action parmi {alphabet}')
+        label.config(text=f'Veuillez choisir une action parmi {alphabet}, le chemin est {chemin[-10:]}, avec une proba de {proba():e}')
 
     bouton_afficher.config(text="Passer au prochain état")
     texte_boite.set("")
 
 
 alphabet = None
+chemin = []
+histo_proba = [1]
+
+
+def proba():
+    res = 1.
+    for el in histo_proba:
+        res = res * el
+    return res
 
 # Crée une fenêtre Tkinter
 fenetre = Tk()

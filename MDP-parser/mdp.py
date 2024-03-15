@@ -55,4 +55,13 @@ def init_graph(argv):
 
 
 if __name__ == '__main__':
-    init_graph(sys.argv)
+    state = init_graph(sys.argv)
+    S0, S1, S = state.calc_S0_S1_S('S1')
+    print(S0)
+    print(S1)
+    print(S)
+    A, b = state.calc_A_b_mdp(S, S1)
+    print(A)
+    print(b)
+    res = state.calc_final_state_mdp('S1')
+    print(res.x)
