@@ -50,6 +50,7 @@ def init_graph(argv):
     print(state.actions)
     print(state.trans_act)
     print(state.trans_noact)
+    print(state.reward)
 
     return state
 
@@ -65,3 +66,4 @@ if __name__ == '__main__':
     print(b)
     res = state.calc_final_state_mdp('S1')
     print(res.x)
+    print(state.iter_val())

@@ -14,16 +14,14 @@ class gramSyntax(gramListener):
         self.c_state = None
         self.states_action = {}
         self.pred = {}
+        self.reward = {}
 
     def enterDefstates(self, ctx):
-        print("début")
-        for x in ctx.INT() :
-            print(str(x))
-        print("fin")
-        for x in ctx.ID():
+        for x, r in zip(ctx.ID(), ctx.INT()):
             self.states[str(x)] = 0
             self.states_action[str(x)] = []
             self.pred[str(x)] = []
+            self.reward[str(x)] = int(str(r))
 
         if len(self.states) != len(set(self.states)):
             raise ValueError("Un même état est défini plusieurs fois")
@@ -272,3 +270,58 @@ class gramSyntax(gramListener):
 
         res = linprog(c, A_ub=A, b_ub=b, bounds=(0, 1))
         return res
+
+    def iter_val(self, gamma=0.9, eps=0.01):
+        # Initialize V0
+        V0 = np.zeros(len(self.states))
+        states = list(self.reward.keys())
+        rewards = list(self.reward.values())
+        for i, rew in enumerate(rewards):
+            V0[i] = rew
+
+        V_pred = V0
+        V_suiv = np.zeros(len(states))
+
+        # Iter until ||V_suiv - V_pred|| < eps
+        cond_fin = False
+        while not cond_fin:
+            for idx_state, state in enumerate(states):
+                if self.states[state] == 1:
+                    s = 0
+                    for next_state, p in self.trans_noact[state]:
+                        s += gamma * p * V_pred[states.index(next_state)]
+                    V_suiv[idx_state] = s
+
+                elif self.states[state] == 2:
+                    list_s = []
+                    for act in self.states_action[state]:
+                        s = 0
+                        for next_state, p in self.trans_act[(state, act)]:
+                            s += gamma * p * V_pred[states.index(next_state)]
+                        list_s.append(s)
+
+                    V_suiv[idx_state] = max(list_s)
+
+            if np.linalg.norm(V_suiv - V_pred) < eps:
+                cond_fin = True
+
+            V_pred = V_suiv
+
+        # Compute the best opponent
+        opponent = [None for _ in states]
+        for i, state in enumerate(states):
+            if self.states[state] == 1:
+                pass
+            elif self.states[state] == 2:
+                list_s = []
+                list_action = list(self.states_action[state])
+                for act in list_action:
+                    s = 0
+                    for next_state, p in self.trans_act[(state, act)]:
+                        s += gamma * p * V_pred[states.index(next_state)]
+                    list_s.append(s)
+
+                idx_act = np.argmax(np.array(list_s))
+                opponent[i] = list_action[idx_act]
+
+        return V_pred, opponent
