@@ -1,4 +1,4 @@
-from random import random
+import random
 import numpy as np
 from gramListener import gramListener
 from scipy.optimize import linprog
@@ -16,12 +16,18 @@ class gramSyntax(gramListener):
         self.pred = {}
         self.reward = {}
 
-    def enterDefstates(self, ctx):
+    def enterDefstates_rewards(self, ctx):
         for x, r in zip(ctx.ID(), ctx.INT()):
             self.states[str(x)] = 0
             self.states_action[str(x)] = []
             self.pred[str(x)] = []
             self.reward[str(x)] = int(str(r))
+
+    def enterDefstates_no_rewards(self, ctx):
+        for x in ctx.ID():
+            self.states[str(x)] = 0
+            self.states_action[str(x)] = []
+            self.pred[str(x)] = []
 
         if len(self.states) != len(set(self.states)):
             raise ValueError("Un même état est défini plusieurs fois")
@@ -95,7 +101,7 @@ class gramSyntax(gramListener):
             histo_state.append(action)
 
         if self.states[self.c_state] == 1:
-            rnd = random()
+            rnd = random.random()
             iterator = iter(self.trans_noact[(self.c_state)])
             d, w = next(iterator)
             rnd = rnd - w
@@ -109,7 +115,7 @@ class gramSyntax(gramListener):
             histo_proba.append(w)
 
         elif self.states[self.c_state] == 2:
-            rnd = random()
+            rnd = random.random()
             iterator = iter(self.trans_act[(self.c_state, action)])
             d, w = next(iterator)
             rnd = rnd - w
@@ -287,7 +293,7 @@ class gramSyntax(gramListener):
         while not cond_fin:
             for idx_state, state in enumerate(states):
                 if self.states[state] == 1:
-                    s = 0
+                    s = rewards[idx_state]
                     for next_state, p in self.trans_noact[state]:
                         s += gamma * p * V_pred[states.index(next_state)]
                     V_suiv[idx_state] = s
@@ -295,7 +301,7 @@ class gramSyntax(gramListener):
                 elif self.states[state] == 2:
                     list_s = []
                     for act in self.states_action[state]:
-                        s = 0
+                        s = rewards[idx_state]
                         for next_state, p in self.trans_act[(state, act)]:
                             s += gamma * p * V_pred[states.index(next_state)]
                         list_s.append(s)
@@ -325,3 +331,80 @@ class gramSyntax(gramListener):
                 opponent[i] = list_action[idx_act]
 
         return V_pred, opponent
+
+    def select_state(self, state, step):
+        return state
+
+    def select_action(self, state, Q):
+        p = random.random()
+        if p < 0.1:
+            if self.states[state] == 1:
+                return None
+            else:
+                rnd_idx = random.randint(0, len(self.states_action[state])-1)
+                return self.states_action[state][rnd_idx]
+        else:
+            if self.states[state] == 1:
+                return None
+            elif self.states[state] == 2:
+                idx_max = 0
+                l_action = self.states_action[state]
+                # First check if we have tested a least once every action
+                for action in l_action:
+                    if Q[(state, action)] == self.reward[state]:
+                        return action
+                Q_max = Q[(state, l_action[0])]
+                for i, act in enumerate(l_action):
+                    if Q[(state, act)] > Q_max:
+                        idx_max = i
+                        Q_max = Q[(state, act)]
+                return self.states_action[state][idx_max]
+
+    def simulate(self, state, action=None):
+        if self.states[state] == 1:
+            s_and_p = self.trans_noact[state]
+        else:
+            s_and_p = self.trans_act[(state, action)]
+
+        rnd = random.random()
+
+        iterator = iter(s_and_p)
+        d, w = next(iterator)
+        rnd = rnd - w
+        while rnd > 0:
+            d, w = next(iterator)
+            rnd = rnd - w
+
+        return d, self.reward[state]
+
+    def Q_learning(self, gamma=1/2):
+
+        Q = {}
+        for state, value in self.states.items():
+            if value == 1:
+                Q[(state, None)] = self.reward[state]
+            elif value == 2:
+                for action in self.states_action[state]:
+                    print(state, action)
+                    Q[(state, action)] = self.reward[state]
+
+        last_state = self.c_state
+
+        for i in range(1, 10000):
+            last_state = self.select_state(last_state, i)
+            action = self.select_action(last_state, Q)
+            new_state, reward = self.simulate(last_state, action)
+
+            l_Q = []
+            if self.states[new_state] == 1:
+                l_Q.append(Q[new_state, None])
+            elif self.states[new_state] == 2:
+                for act in self.states_action[new_state]:
+                    l_Q.append(Q[new_state, act])
+
+            dt = reward + gamma * max(l_Q) - Q[last_state, action]
+            Q[last_state, action] += dt / i
+
+            last_state = new_state
+
+        return Q

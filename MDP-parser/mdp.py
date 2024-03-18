@@ -11,8 +11,12 @@ class gramPrintListener(gramListener):
     def __init__(self):
         pass
 
-    def enterDefstates(self, ctx):
+    def enterDefstates_no_rewards(self, ctx: gramParser.Defstates_no_rewardsContext):
         print("States: %s" % str([str(x) for x in ctx.ID()]))
+
+    def enterDefstates_rewards(self, ctx:gramParser.Defstates_rewardsContext):
+        print("States: %s" % str([str(x) for x in ctx.ID()]))
+        print("Reward %s" % str([str(x) for x in ctx.INT()]))
 
     def enterDefactions(self, ctx):
         print("Actions: %s" % str([str(x) for x in ctx.ID()]))
@@ -46,6 +50,7 @@ def init_graph(argv):
     walker.walk(printer, tree)
     state = gramSyntax()
     walker.walk(state, tree)
+    state.c_state = list(state.states.keys())[0]
     print(state.states)
     print(state.actions)
     print(state.trans_act)
@@ -57,13 +62,5 @@ def init_graph(argv):
 
 if __name__ == '__main__':
     state = init_graph(sys.argv)
-    S0, S1, S = state.calc_S0_S1_S('S1')
-    print(S0)
-    print(S1)
-    print(S)
-    A, b = state.calc_A_b_mdp(S, S1)
-    print(A)
-    print(b)
-    res = state.calc_final_state_mdp('S1')
-    print(res.x)
     print(state.iter_val())
+    print(state.Q_learning())
