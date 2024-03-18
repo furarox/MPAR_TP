@@ -26,6 +26,24 @@ class gramListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by gramParser#defstates_no_rewards.
+    def enterDefstates_no_rewards(self, ctx:gramParser.Defstates_no_rewardsContext):
+        pass
+
+    # Exit a parse tree produced by gramParser#defstates_no_rewards.
+    def exitDefstates_no_rewards(self, ctx:gramParser.Defstates_no_rewardsContext):
+        pass
+
+
+    # Enter a parse tree produced by gramParser#defstates_rewards.
+    def enterDefstates_rewards(self, ctx:gramParser.Defstates_rewardsContext):
+        pass
+
+    # Exit a parse tree produced by gramParser#defstates_rewards.
+    def exitDefstates_rewards(self, ctx:gramParser.Defstates_rewardsContext):
+        pass
+
+
     # Enter a parse tree produced by gramParser#defactions.
     def enterDefactions(self, ctx:gramParser.DefactionsContext):
         pass
