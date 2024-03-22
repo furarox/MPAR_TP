@@ -63,4 +63,7 @@ def init_graph(argv):
 if __name__ == '__main__':
     state = init_graph(sys.argv)
     print(state.iter_val())
-    print(state.Q_learning())
+    Q_f, best_opponent = state.Q_learning()
+    print(Q_f)
+    for key, act in best_opponent.items():
+        print(f'Action selected in state {key} : {act}')

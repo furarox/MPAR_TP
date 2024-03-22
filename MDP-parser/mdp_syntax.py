@@ -379,32 +379,65 @@ class gramSyntax(gramListener):
 
     def Q_learning(self, gamma=1/2):
 
+        alpha = {}
+        for state, value in self.states.items():
+            if value == 1:
+                alpha[(state, None)] = 1
+            elif value == 2:
+                for action in self.states_action[state]:
+                    alpha[(state, action)] = 1
+
+        Q_f = self.init_Q()
+
+        for _ in range(100_000):
+            Q = self.init_Q()
+            last_state = random.choice(list(self.states.keys()))
+
+            for i in range(1, 100):
+                last_state = self.select_state(last_state, i)
+                action = self.select_action(last_state, Q)
+                new_state, reward = self.simulate(last_state, action)
+
+                l_Q = []
+                if self.states[new_state] == 1:
+                    l_Q.append(Q[new_state, None])
+                elif self.states[new_state] == 2:
+                    for act in self.states_action[new_state]:
+                        l_Q.append(Q[new_state, act])
+
+                dt = reward + gamma * max(l_Q) - Q[last_state, action]
+                Q[last_state, action] += dt / alpha[(last_state, action)]
+                alpha[(last_state, action)] += 1
+
+                last_state = new_state
+
+            for key, value in Q.items():
+                Q_f[key] += value
+
+        best_opponent = {state: None for state in self.states.keys()}
+        for state in best_opponent.keys():
+            # Choose best action
+            if self.states[state] == 1:
+                continue
+
+            act_max = self.states_action[state][0]
+            Q_max = Q_f[(state, act_max)]
+            for act in self.states_action[state][1:]:
+                if Q_f[(state, act)] > Q_max:
+                    act_max = act
+                    Q_max = Q_f[(state, act)]
+
+            best_opponent[state] = act_max
+
+        return Q_f, best_opponent
+
+    def init_Q(self) -> dict:
         Q = {}
         for state, value in self.states.items():
             if value == 1:
                 Q[(state, None)] = self.reward[state]
             elif value == 2:
                 for action in self.states_action[state]:
-                    print(state, action)
                     Q[(state, action)] = self.reward[state]
-
-        last_state = self.c_state
-
-        for i in range(1, 10000):
-            last_state = self.select_state(last_state, i)
-            action = self.select_action(last_state, Q)
-            new_state, reward = self.simulate(last_state, action)
-
-            l_Q = []
-            if self.states[new_state] == 1:
-                l_Q.append(Q[new_state, None])
-            elif self.states[new_state] == 2:
-                for act in self.states_action[new_state]:
-                    l_Q.append(Q[new_state, act])
-
-            dt = reward + gamma * max(l_Q) - Q[last_state, action]
-            Q[last_state, action] += dt / i
-
-            last_state = new_state
 
         return Q
