@@ -441,3 +441,49 @@ class gramSyntax(gramListener):
                     Q[(state, action)] = self.reward[state]
 
         return Q
+    
+    def monte_carlo_rec(self,etat_debut,etat_final,limite_taille,taille_parcours):
+        self.c_state = etat_debut
+        if self.states[self.c_state] == 2:
+            raise ValueError("impossible d'appliquer Monte Carlo ou SPRT à un MDP")
+        if self.c_state == etat_final :
+            return(1)
+        elif taille_parcours == limite_taille :
+            return(0)
+        else :
+            rnd = random.random()
+            iterator = iter(self.trans_noact[(self.c_state)])
+            d, w = next(iterator)
+            rnd = rnd - w
+            while rnd > 0:
+                d, w = next(iterator)
+                rnd = rnd - w
+            self.c_state = d
+            return(self.monte_carlo_rec(self.c_state,etat_final,limite_taille,taille_parcours+1))
+
+
+    def monte_carlo(self,delta,epsilon,etat_debut,etat_final,limite_taille):
+        N = (np.log(2)-np.log(delta))/(2*epsilon)**2
+        res = 0
+        for i in range(N) :
+            res += self.monte_carlo_rec(etat_debut,etat_final,limite_taille,0)
+        return(res/N)
+
+    def sprt(self,teta,epsilon,alpha,beta,etat_debut,etat_final,limite_taille):
+        Rm = 1
+        borne_A = (1-beta)/alpha
+        borne_B = beta/(1-alpha)
+        gamma_1 = teta-epsilon
+        gamma_0 = teta+epsilon
+        while Rm > borne_B and Rm < borne_A :
+            if self.monte_carlo_rec(etat_debut,etat_final,limite_taille,0) == 1 :
+                Rm *= (gamma_1/gamma_0)
+            else :
+                Rm *= (1-gamma_1)/(1-gamma_0)
+        if Rm >= borne_A :
+            print("On accepte H1")
+        elif Rm <= borne_B :
+            print("On accepte H0")
+
+        
+
