@@ -1,22 +1,18 @@
-from tkinter import Tk, Label, Entry, Button, StringVar
-from PIL import Image, ImageTk
 import sys
-from mdp import init_graph
+from tkinter import Tk, Label, Entry, Button, StringVar
+
+from PIL import Image, ImageTk
+
 from drawgraph import graphDrawer
+from mdp import init_graph
 
 
-def afficher_image():
-    global alphabet
+def afficher_image(texte_boite, alphabet, state, chemin, histo_proba,
+                   label_image, label, bouton_afficher):
     action = texte_boite.get()
-    if alphabet is None:
-        if action not in state.states:
-            return None
-        else:
-            alphabet = state.init_run(action, chemin)
-    elif action not in alphabet:
+    if action not in alphabet:
         return None
-    else:
-        alphabet = state.run(action, chemin, histo_proba)
+    alphabet = state.run(action, chemin, histo_proba)
     graphDrawer(state)
     # Fonction pour afficher l'image après avoir cliqué sur le bouton
     # Charge l'image avec PIL
@@ -31,56 +27,62 @@ def afficher_image():
 
     # Change le texte du label et du bouton
     if alphabet == [""]:
-        label.config(text=f"L'état actuel est probabiliste, le chemin parcouru est {chemin[-10:]}, avec une proba de {proba():e}")
+        label.config(text=f"L'état actuel est probabiliste, le chemin "
+                          f"parcouru est {chemin[-10:]}, avec une proba de "
+                          f"{proba(histo_proba):e}")
     else:
-        label.config(text=f'Veuillez choisir une action parmi {alphabet}, le chemin est {chemin[-10:]}, avec une proba de {proba():e}')
+        label.config(text=f'Veuillez choisir une action parmi {alphabet}, '
+                          f'le chemin est {chemin[-10:]}, avec une proba de {proba(histo_proba):e}')
 
     bouton_afficher.config(text="Passer au prochain état")
     texte_boite.set("")
 
 
-alphabet = None
-chemin = []
-histo_proba = [1]
-
-
-def proba():
+def proba(histo_proba):
     res = 1.
     for el in histo_proba:
         res = res * el
     return res
 
-# Crée une fenêtre Tkinter
-fenetre = Tk()
-fenetre.title("Affichage d'une image")
 
-
-# Crée une variable de chaîne pour stocker le texte de la boîte de texte
-texte_boite = StringVar()
-
-# Crée un label à côté de la boîte de texte
-label = Label(fenetre, text="Choissisez l'état initial")
-label.pack()
-
-# Crée une boîte de texte (Entry) pour permettre à l'utilisateur d'écrire
-boite_texte = Entry(fenetre, textvariable=texte_boite)
-boite_texte.pack()
-
-# Crée un bouton pour afficher l'image en fonction de l'entrée de l'utilisateur
-
-bouton_afficher = Button(fenetre,
-                         text="Lancer la simulation",
-                         command=afficher_image)
-
-bouton_afficher.pack()
-
-# Crée un widget Label pour afficher l'image
-label_image = Label(fenetre)
-label_image.pack()
-
-
-if __name__ == "__main__":
+def main():
     state = init_graph(sys.argv)
+    # Crée une fenêtre Tkinter
+    fenetre = Tk()
+    fenetre.title("Affichage d'une image")
 
-# Lance la boucle principale de la fenêtre Tkinter
-fenetre.mainloop()
+    alphabet = None
+    chemin = []
+    histo_proba = [1]
+
+    # Crée une variable de chaîne pour stocker le texte de la boîte de texte
+    texte_boite = StringVar()
+
+    # Crée un label à côté de la boîte de texte
+    label = Label(fenetre, text="Choissisez l'état initial")
+    label.pack()
+
+    # Crée une boîte de texte (Entry) pour permettre à l'utilisateur d'écrire
+    boite_texte = Entry(fenetre, textvariable=texte_boite)
+    boite_texte.pack()
+
+    # Crée un widget Label pour afficher l'image
+    label_image = Label(fenetre)
+    label_image.pack()
+
+    bouton_afficher = Button(fenetre,
+                             text="Lancer la simulation",
+                             command=lambda: afficher_image(texte_boite,
+                                                            alphabet,
+                                                            state, chemin,
+                                                            histo_proba,
+                                                            label_image,
+                                                            label,
+                                                            bouton_afficher))
+    bouton_afficher.pack()
+    # Lance la boucle principale de la fenêtre Tkinter
+    fenetre.mainloop()
+
+
+if __name__ == '__main__':
+    main()

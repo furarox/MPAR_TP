@@ -47,19 +47,22 @@ class gramSyntax(gramListener):
             raise ValueError("Une transition a été declaré avec "
                              "un état non existant")
         elif self.states[dep] == 1:
-            raise ValueError("Une transition possède à la fois des transitions "
-                             "avec action et avec probabilité")
+            raise ValueError(
+                "Une transition possède à la fois des transitions "
+                "avec action et avec probabilité")
 
         if self.states[dep] == 0:
             self.states[dep] = 2
 
         if act not in self.actions:
-            raise ValueError("Une transition a été déclarée avec une action hors "
-                             "de l'alphabet")
+            raise ValueError(
+                "Une transition a été déclarée avec une action hors "
+                "de l'alphabet")
 
         s = sum(weight)
         if (dep, act) in self.trans_act:
-            raise ValueError("Une transition avec action sur un même état a été déclaré deux fois")
+            raise ValueError(
+                "Une transition avec action sur un même état a été déclaré deux fois")
         self.states_action[dep].append(act)
         self.trans_act[(dep, act)] = []
 
@@ -76,15 +79,17 @@ class gramSyntax(gramListener):
             raise ValueError("Une transition a été declaré avec "
                              "un état non existant")
         elif self.states[dep] == 1:
-            raise ValueError("Une transition possède à la fois des transitions "
-                             "avec action et avec probabilité")
+            raise ValueError(
+                "Une transition possède à la fois des transitions "
+                "avec action et avec probabilité")
 
         if self.states[dep] == 0:
             self.states[dep] = 1
 
         s = sum(weight)
         if dep in self.trans_noact:
-            raise ValueError("Une transition sur un même état a été déclaré deux fois")
+            raise ValueError(
+                "Une transition sur un même état a été déclaré deux fois")
         self.trans_noact[dep] = []
 
         for a, w in zip(tmp, weight):
@@ -95,7 +100,8 @@ class gramSyntax(gramListener):
 
     def run(self, action, histo_state, histo_proba):
         if action != "" and action not in self.states_action[self.c_state]:
-            raise ValueError("L'action choisie n'est pas dans l'alphabet déclaré")
+            raise ValueError(
+                "L'action choisie n'est pas dans l'alphabet déclaré")
 
         if action != "":
             histo_state.append(action)
@@ -129,24 +135,28 @@ class gramSyntax(gramListener):
             histo_proba.append(w)
 
         if self.states[self.c_state] == 1:
-            print("L'état actuel est probabliste, entrer 'enter' pour passer au prochain état")
+            print(
+                "L'état actuel est probabliste, entrer 'enter' pour passer au prochain état")
             return [""]
 
         elif self.states[self.c_state] == 2:
             actions = [x[1] for x in self.trans_act if x[0] == self.c_state]
-            print(f"L'état actuel est décisionnel, entrer l'action à choisir parmi les différentes actions suivantes : {actions}")
+            print(
+                f"L'état actuel est décisionnel, entrer l'action à choisir parmi les différentes actions suivantes : {actions}")
             return actions
 
     def init_run(self, state, chemin):
         self.c_state = state
         chemin.append(state)
         if self.states[self.c_state] == 1:
-            print("L'état actuel est probabliste, entrer 'enter' pour passer au prochain état")
+            print(
+                "L'état actuel est probabliste, entrer 'enter' pour passer au prochain état")
             return [""]
 
         elif self.states[self.c_state] == 2:
             actions = [x[1] for x in self.trans_act if x[0] == self.c_state]
-            print(f"L'état actuel est décisionnel, entrer l'action à choisir parmi les différentes actions suivantes : {actions}")
+            print(
+                f"L'état actuel est décisionnel, entrer l'action à choisir parmi les différentes actions suivantes : {actions}")
             return actions
 
     def check(self):
@@ -190,9 +200,15 @@ class gramSyntax(gramListener):
             self.calc_S0_S1_S_rec(pred, S1, S)
 
     def calc_S0_S1_S(self, last_state):
-        S1 = [last_state]
+        if isinstance(last_state, str):
+            S1 = [last_state]
+        elif isinstance(last_state, list):
+            S1 = last_state
+        else:
+            raise TypeError
         S = []
-        self.calc_S0_S1_S_rec(last_state, S1, S)
+        for last_state in S1:
+            self.calc_S0_S1_S_rec(last_state, S1, S)
         S0 = []
         for state in self.states:
             if state not in S1 and state not in S:
@@ -221,7 +237,7 @@ class gramSyntax(gramListener):
 
         identity = np.eye(len(S))
 
-        res = np.matmul(np.linalg.inv(identity - A),  b.reshape((len(S), 1)))
+        res = np.matmul(np.linalg.inv(identity - A), b.reshape((len(S), 1)))
         print(A.shape)
         print(b.shape)
         print(res.shape)
@@ -237,7 +253,6 @@ class gramSyntax(gramListener):
                 action_list.append(self.states_action[state])
 
         A = np.zeros((sum([len(x) for x in action_list]), len(S)))
-        print(action_list)
         b = np.zeros(sum([len(x) for x in action_list]))
 
         for i, state in enumerate(S):
@@ -259,12 +274,12 @@ class gramSyntax(gramListener):
                     for next_state, p in next_states:
                         if next_state in S:
                             col = S.index(next_state)
-                            A[row+ii, col] += p
+                            A[row + ii, col] += p
                         elif next_state in S1:
-                            b[row+ii] += p
+                            b[row + ii] += p
 
                     col_state = S.index(state)
-                    A[row+ii, col_state] -= 1
+                    A[row + ii, col_state] -= 1
 
         return A, -b
 
@@ -275,7 +290,7 @@ class gramSyntax(gramListener):
         c = [1 for _ in S]
 
         res = linprog(c, A_ub=A, b_ub=b, bounds=(0, 1))
-        return res
+        return S, res
 
     def iter_val(self, gamma=0.9, eps=0.01):
         # Initialize V0
@@ -341,7 +356,7 @@ class gramSyntax(gramListener):
             if self.states[state] == 1:
                 return None
             else:
-                rnd_idx = random.randint(0, len(self.states_action[state])-1)
+                rnd_idx = random.randint(0, len(self.states_action[state]) - 1)
                 return self.states_action[state][rnd_idx]
         else:
             if self.states[state] == 1:
@@ -377,7 +392,7 @@ class gramSyntax(gramListener):
 
         return d, self.reward[state]
 
-    def Q_learning(self, gamma=1/2):
+    def Q_learning(self, gamma=1 / 2):
 
         alpha = {}
         for state, value in self.states.items():
@@ -441,16 +456,18 @@ class gramSyntax(gramListener):
                     Q[(state, action)] = self.reward[state]
 
         return Q
-    
-    def monte_carlo_rec(self,etat_debut,etat_final,limite_taille,taille_parcours):
+
+    def monte_carlo_rec(self, etat_debut, etat_final, limite_taille,
+                        taille_parcours):
         self.c_state = etat_debut
         if self.states[self.c_state] == 2:
-            raise ValueError("impossible d'appliquer Monte Carlo ou SPRT à un MDP")
-        if self.c_state == etat_final :
-            return(1)
-        elif taille_parcours == limite_taille :
-            return(0)
-        else :
+            raise ValueError(
+                "impossible d'appliquer Monte Carlo ou SPRT à un MDP")
+        if self.c_state == etat_final:
+            return (1)
+        elif taille_parcours == limite_taille:
+            return (0)
+        else:
             rnd = random.random()
             iterator = iter(self.trans_noact[(self.c_state)])
             d, w = next(iterator)
@@ -459,31 +476,33 @@ class gramSyntax(gramListener):
                 d, w = next(iterator)
                 rnd = rnd - w
             self.c_state = d
-            return(self.monte_carlo_rec(self.c_state,etat_final,limite_taille,taille_parcours+1))
+            return (
+                self.monte_carlo_rec(self.c_state, etat_final, limite_taille,
+                                     taille_parcours + 1))
 
-
-    def monte_carlo(self,delta,epsilon,etat_debut,etat_final,limite_taille):
-        N = (np.log(2)-np.log(delta))/(2*epsilon)**2
+    def monte_carlo(self, delta, epsilon, etat_debut, etat_final,
+                    limite_taille):
+        N = (np.log(2) - np.log(delta)) / (2 * epsilon) ** 2
         res = 0
-        for i in range(N) :
-            res += self.monte_carlo_rec(etat_debut,etat_final,limite_taille,0)
-        return(res/N)
+        for i in range(N):
+            res += self.monte_carlo_rec(etat_debut, etat_final, limite_taille,
+                                        0)
+        return (res / N)
 
-    def sprt(self,teta,epsilon,alpha,beta,etat_debut,etat_final,limite_taille):
+    def sprt(self, teta, epsilon, alpha, beta, etat_debut, etat_final,
+             limite_taille):
         Rm = 1
-        borne_A = (1-beta)/alpha
-        borne_B = beta/(1-alpha)
-        gamma_1 = teta-epsilon
-        gamma_0 = teta+epsilon
-        while Rm > borne_B and Rm < borne_A :
-            if self.monte_carlo_rec(etat_debut,etat_final,limite_taille,0) == 1 :
-                Rm *= (gamma_1/gamma_0)
-            else :
-                Rm *= (1-gamma_1)/(1-gamma_0)
-        if Rm >= borne_A :
+        borne_A = (1 - beta) / alpha
+        borne_B = beta / (1 - alpha)
+        gamma_1 = teta - epsilon
+        gamma_0 = teta + epsilon
+        while Rm > borne_B and Rm < borne_A:
+            if self.monte_carlo_rec(etat_debut, etat_final, limite_taille,
+                                    0) == 1:
+                Rm *= (gamma_1 / gamma_0)
+            else:
+                Rm *= (1 - gamma_1) / (1 - gamma_0)
+        if Rm >= borne_A:
             print("On accepte H1")
-        elif Rm <= borne_B :
+        elif Rm <= borne_B:
             print("On accepte H0")
-
-        
-
