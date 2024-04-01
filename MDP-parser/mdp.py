@@ -45,17 +45,10 @@ def init_graph(argv):
     stream = CommonTokenStream(lexer)
     parser = gramParser(stream)
     tree = parser.program()
-    printer = gramPrintListener()
     walker = ParseTreeWalker()
-    walker.walk(printer, tree)
     state = gramSyntax()
     walker.walk(state, tree)
     state.c_state = list(state.states.keys())[0]
-    print(state.states)
-    print(state.actions)
-    print(state.trans_act)
-    print(state.trans_noact)
-    print(state.reward)
 
     return state
 

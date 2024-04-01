@@ -106,12 +106,40 @@ def calculus_window(main_window, state):
     label.pack()
 
     button_PCTL = Button(n_window,
-                         text="PCTL",
+                         text="Algorithme PCTL",
                          command=lambda: PCTL_Window(
                              n_window,
                              state
                          ))
     button_PCTL.pack()
+
+    buttonIterVal = Button(n_window,
+                           text="Algorithme IterVal",
+                           command=lambda: IterValWindow(
+                               n_window,
+                               state
+                           ))
+    buttonIterVal.pack()
+
+
+def IterValWindow(main_window, state):
+    window_iterval = Toplevel(main_window)
+
+    V, opponent = state.iter_val()
+
+    text = ("L'algorithme IterVal trouves les valeurs suivantes pour la "
+            "fonction d'espérance : \n")
+    states = list(state.reward.keys())
+    for state_, v in zip(states, V):
+        text += f"{state_}: {v} \n"
+
+    text += "Et trouve comme meilleur adversaire le suivant : \n"
+    for state_, act in zip(states, opponent):
+        text += f'{state_}.{act}\n'
+
+    label = Label(window_iterval,
+                  text=text)
+    label.pack()
 
 
 def PCTL_Window(main_window, state):
