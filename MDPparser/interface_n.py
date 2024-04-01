@@ -4,8 +4,8 @@ from tkinter import Tk, Label, Entry, Button, StringVar, Toplevel
 
 from PIL import Image, ImageTk
 
-from drawgraph import graphDrawer
-from mdp import init_graph
+from MDPparser.drawgraph import graphDrawer
+from MDPparser.mdp import init_graph
 
 
 def main():
@@ -130,6 +130,172 @@ def calculus_window(main_window, state):
                               ))
     button_Qlearning.pack()
 
+    button_MC = Button(n_window,
+                       text="Algorithme Monte-Carlo",
+                       command=lambda: MC_Window(
+                           n_window,
+                           state
+                       ))
+    button_MC.pack()
+
+    button_SPRT = Button(n_window,
+                         text="Algorithme SPRT",
+                         command=lambda: SPRT_Window(
+                             n_window,
+                             state
+                         ))
+    button_SPRT.pack()
+
+
+def SPRT_Window(main_window, state):
+    sprt_window = Toplevel(main_window)
+    sprt_window.title("SPRT")
+
+    text_deb_state = StringVar()
+    text_final_state = StringVar()
+    text_nb_simulation = StringVar()
+    text_p = StringVar()
+    text_eps = StringVar()
+    text_alpha = StringVar()
+    text_beta = StringVar()
+
+    label_deb_state = Label(sprt_window,
+                            text="Choissisez un état de départ de trace")
+    label_deb_state.pack()
+    box_deb_state = Entry(sprt_window,
+                          textvariable=text_deb_state)
+    box_deb_state.pack()
+    label_end_state = Label(sprt_window,
+                            text="choisissez un groupe d'états finaux ("
+                                 "séparés par un espace)")
+    label_end_state.pack()
+    box_final_state = Entry(sprt_window,
+                            textvariable=text_final_state)
+    box_final_state.pack()
+    label_nb_simulation = Label(sprt_window,
+                                text="choisissez la longueur des traces")
+    label_nb_simulation.pack()
+    box_nb_simulation = Entry(sprt_window,
+                              textvariable=text_nb_simulation)
+    box_nb_simulation.pack()
+    label_delta = Label(sprt_window,
+                        text="Choisissez une probabilité (on vérifie si >= p)")
+    label_delta.pack()
+    box_delta = Entry(sprt_window,
+                      textvariable=text_p)
+    box_delta.pack()
+    label_eps = Label(sprt_window,
+                      text="Choisissez une précision (eps)")
+    label_eps.pack()
+    box_eps = Entry(sprt_window,
+                    textvariable=text_eps)
+    box_eps.pack()
+    label_alpha = Label(sprt_window,
+                        text="Choix de alpha")
+    label_alpha.pack()
+    box_alpha = Entry(sprt_window,
+                      textvariable=text_alpha)
+    box_alpha.pack()
+    label_beta = Label(sprt_window,
+                       text="Choix de beta")
+    label_beta.pack()
+    box_beta = Entry(sprt_window,
+                     textvariable=text_beta)
+    box_beta.pack()
+    label_res = Label(sprt_window)
+    label_res.pack()
+
+    button_simulation = Button(sprt_window,
+                               text="Lancer la simulation",
+                               command=lambda: affiche_SPRT(
+                                   state,
+                                   float(text_p.get()),
+                                   float(text_eps.get()),
+                                   float(text_alpha.get()),
+                                   float(text_beta.get()),
+                                   text_deb_state.get(),
+                                   text_final_state.get().split(),
+                                   int(text_nb_simulation.get()),
+                                   label_res
+                               ))
+    button_simulation.pack()
+
+
+def affiche_SPRT(state, teta, epsilon,
+                 alpha, beta,
+                 deb_state, end_state,
+                 nb_simulation, label_res):
+    res = state.sprt(teta, epsilon, alpha, beta, deb_state, end_state,
+                     nb_simulation)
+    label_res.config(text=f'Propriété {res}')
+
+
+def MC_Window(main_window, state):
+    mc_window = Toplevel(main_window)
+    mc_window.title("Monte-Carlo")
+
+    text_deb_state = StringVar()
+    text_final_state = StringVar()
+    text_nb_simulation = StringVar()
+    text_delta = StringVar()
+    text_eps = StringVar()
+
+    label_deb_state = Label(mc_window,
+                            text="Choissisez un état de départ de trace")
+    label_deb_state.pack()
+    box_deb_state = Entry(mc_window,
+                          textvariable=text_deb_state)
+    box_deb_state.pack()
+    label_end_state = Label(mc_window,
+                            text="choisissez un groupe d'états finaux ("
+                                 "séparés par un espace)")
+    label_end_state.pack()
+    box_final_state = Entry(mc_window,
+                            textvariable=text_final_state)
+    box_final_state.pack()
+    label_nb_simulation = Label(mc_window,
+                                text="choisissez la longueur des traces")
+    label_nb_simulation.pack()
+    box_nb_simulation = Entry(mc_window,
+                              textvariable=text_nb_simulation)
+    box_nb_simulation.pack()
+    label_delta = Label(mc_window,
+                        text="Choisissez une marge d'erreur (delta)")
+    label_delta.pack()
+    box_delta = Entry(mc_window,
+                      textvariable=text_eps)
+    box_delta.pack()
+    label_eps = Label(mc_window,
+                      text="Choisissez une précision (eps)")
+    label_eps.pack()
+    box_eps = Entry(mc_window,
+                    textvariable=text_delta)
+    box_eps.pack()
+
+    label_res = Label(mc_window)
+    label_res.pack()
+
+    button_mc = Button(mc_window,
+                       text="Lancer la simulation",
+                       command=lambda: MC_affiche(
+                           state,
+                           text_deb_state.get(),
+                           text_final_state.get().split(),
+                           int(text_nb_simulation.get()),
+                           float(text_delta.get()),
+                           float(text_eps.get()),
+                           label_res
+                       ))
+    button_mc.pack()
+
+
+def MC_affiche(state, deb_state, end_state,
+               nb_simulation, delta, eps,
+               window_label):
+    res = state.monte_carlo(delta, eps, deb_state, end_state, nb_simulation)
+    window_label.config(text=f"La probabilité d'atteindre les états finaux "
+                             f"est de {res}")
+
 
 def QlearningWindow(main_window, state):
     qlearningwindow = Toplevel(main_window)
@@ -181,7 +347,7 @@ def IterValWindow(main_window, state):
 def PCTL_Window(main_window, state):
     window_PCTL = Toplevel(main_window)
     window_PCTL.title("PCTL")
-    label = Label(window_PCTL, text="Choisisez les états finaux (écrire les "
+    label = Label(window_PCTL, text="choisissez les états finaux (écrire les "
                                     "états finaux separés par un espace)")
     label.pack()
 
@@ -232,7 +398,7 @@ def affiche_PCTL(state,
     label.config(text=text)
 
 
-if __name__ == '__main__':
+def wrapper_main():
     try:
         main()
     finally:
@@ -240,3 +406,6 @@ if __name__ == '__main__':
         if path.exists():
             path.unlink()
 
+
+if __name__ == '__main__':
+    wrapper_main()

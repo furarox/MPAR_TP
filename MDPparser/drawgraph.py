@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import networkx as nx
-from mdp_syntax import gramSyntax
+from MDPparser.mdp_syntax import gramSyntax
 import matplotlib
 matplotlib.use("TkAgg")
 

@@ -1,9 +1,9 @@
 from antlr4 import FileStream, CommonTokenStream, ParseTreeWalker
-from gramLexer import gramLexer
-from gramListener import gramListener
-from gramParser import gramParser
+from MDPparser.gramLexer import gramLexer
+from MDPparser.gramListener import gramListener
+from MDPparser.gramParser import gramParser
 import sys
-from mdp_syntax import gramSyntax
+from MDPparser.mdp_syntax import gramSyntax
 
 
 class gramPrintListener(gramListener):
