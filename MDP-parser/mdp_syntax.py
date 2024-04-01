@@ -394,6 +394,7 @@ class gramSyntax(gramListener):
 
     def Q_learning(self, gamma=1 / 2):
 
+        total_reward = 0
         alpha = {}
         for state, value in self.states.items():
             if value == 1:
@@ -404,7 +405,7 @@ class gramSyntax(gramListener):
 
         Q_f = self.init_Q()
 
-        for _ in range(100_000):
+        for _ in range(10_000):
             Q = self.init_Q()
             last_state = random.choice(list(self.states.keys()))
 
@@ -412,6 +413,7 @@ class gramSyntax(gramListener):
                 last_state = self.select_state(last_state, i)
                 action = self.select_action(last_state, Q)
                 new_state, reward = self.simulate(last_state, action)
+                total_reward += reward
 
                 l_Q = []
                 if self.states[new_state] == 1:
@@ -444,7 +446,7 @@ class gramSyntax(gramListener):
 
             best_opponent[state] = act_max
 
-        return Q_f, best_opponent
+        return total_reward, best_opponent, Q_f
 
     def init_Q(self) -> dict:
         Q = {}

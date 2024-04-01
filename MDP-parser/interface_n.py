@@ -1,3 +1,4 @@
+import pathlib
 import sys
 from tkinter import Tk, Label, Entry, Button, StringVar, Toplevel
 
@@ -121,9 +122,44 @@ def calculus_window(main_window, state):
                            ))
     buttonIterVal.pack()
 
+    button_Qlearning = Button(n_window,
+                              text="Algorithme Qlearning",
+                              command=lambda: QlearningWindow(
+                                  n_window,
+                                  state
+                              ))
+    button_Qlearning.pack()
+
+
+def QlearningWindow(main_window, state):
+    qlearningwindow = Toplevel(main_window)
+    qlearningwindow.title('Qlearning')
+
+    total_reward, opponent, Qf = state.Q_learning()
+
+    text = "Q value pour les différents couples état.action : \n"
+    for state_ in list(state.states.keys()):
+        if state.states[state_] == 2:
+            for action in state.states_action[state_]:
+                text += f'Q({state_}, {action}) : {Qf[state_, action]}, '
+        elif state.states[state_] == 1:
+            action = None
+            text += f'Q({state_}, {action}) : {Qf[state_, action]}, '
+
+    text += "\nLe meilleur adversaire retenu est le suivant : \n"
+    for state_, act in opponent.items():
+        text += f'{state_}.{act}\n'
+
+    text += f'La récompense totale obtenue sur la simulation est {total_reward}'
+
+    label = Label(qlearningwindow,
+                  text=text)
+    label.pack()
+
 
 def IterValWindow(main_window, state):
     window_iterval = Toplevel(main_window)
+    window_iterval.title("IterVal")
 
     V, opponent = state.iter_val()
 
@@ -144,6 +180,7 @@ def IterValWindow(main_window, state):
 
 def PCTL_Window(main_window, state):
     window_PCTL = Toplevel(main_window)
+    window_PCTL.title("PCTL")
     label = Label(window_PCTL, text="Choisisez les états finaux (écrire les "
                                     "états finaux separés par un espace)")
     label.pack()
@@ -196,5 +233,10 @@ def affiche_PCTL(state,
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    finally:
+        path = pathlib.Path("test.png")
+        if path.exists():
+            path.unlink()
 
