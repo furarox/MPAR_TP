@@ -1,2 +1,2 @@
 # MPAR_TP
-petit tp de mpar
+Pour l'installation et l'utilisation de ce programme, veuillez vous référer au rapport.

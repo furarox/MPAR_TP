@@ -115,7 +115,6 @@ class gramSyntax(gramListener):
                 d, w = next(iterator)
                 rnd = rnd - w
 
-            print(f"Transition entre l'état {self.c_state} et l'état {d}")
             self.c_state = d
             histo_state.append(d)
             histo_proba.append(w)
@@ -129,20 +128,15 @@ class gramSyntax(gramListener):
                 d, w = next(iterator)
                 rnd = rnd - w
 
-            print(f"Transition entre l'état {self.c_state} et l'état {d}")
             self.c_state = d
             histo_state.append(d)
             histo_proba.append(w)
 
         if self.states[self.c_state] == 1:
-            print(
-                "L'état actuel est probabliste, entrer 'enter' pour passer au prochain état")
             return [""]
 
         elif self.states[self.c_state] == 2:
             actions = [x[1] for x in self.trans_act if x[0] == self.c_state]
-            print(
-                f"L'état actuel est décisionnel, entrer l'action à choisir parmi les différentes actions suivantes : {actions}")
             return actions
 
     def init_run(self, state, chemin):
@@ -348,11 +342,13 @@ class gramSyntax(gramListener):
         return V_pred, opponent
 
     def select_state(self, state, step):
+        if step % 100 == 0:
+            state = random.choice(list(self.states.keys()))
         return state
 
     def select_action(self, state, Q):
         p = random.random()
-        if p < 0.1:
+        if p < 0.05:
             if self.states[state] == 1:
                 return None
             else:
@@ -392,7 +388,7 @@ class gramSyntax(gramListener):
 
         return d, self.reward[state]
 
-    def Q_learning(self, gamma=1 / 2):
+    def Q_learning(self, gamma=1 / 2, n_tot=10_000):
 
         total_reward = 0
         alpha = {}
@@ -403,33 +399,28 @@ class gramSyntax(gramListener):
                 for action in self.states_action[state]:
                     alpha[(state, action)] = 1
 
-        Q_f = self.init_Q()
+        Q = self.init_Q()
+        last_state = None
 
-        for _ in range(10_000):
-            Q = self.init_Q()
-            last_state = random.choice(list(self.states.keys()))
+        for step in range(n_tot):
 
-            for i in range(1, 100):
-                last_state = self.select_state(last_state, i)
-                action = self.select_action(last_state, Q)
-                new_state, reward = self.simulate(last_state, action)
-                total_reward += reward
+            last_state = self.select_state(last_state, step)
+            action = self.select_action(last_state, Q)
+            new_state, reward = self.simulate(last_state, action)
+            total_reward += reward
 
-                l_Q = []
-                if self.states[new_state] == 1:
-                    l_Q.append(Q[new_state, None])
-                elif self.states[new_state] == 2:
-                    for act in self.states_action[new_state]:
-                        l_Q.append(Q[new_state, act])
+            l_Q = []
+            if self.states[new_state] == 1:
+                l_Q.append(Q[new_state, None])
+            elif self.states[new_state] == 2:
+                for act in self.states_action[new_state]:
+                    l_Q.append(Q[new_state, act])
 
-                dt = reward + gamma * max(l_Q) - Q[last_state, action]
-                Q[last_state, action] += dt / alpha[(last_state, action)]
-                alpha[(last_state, action)] += 1
+            dt = reward + gamma * max(l_Q) - Q[last_state, action]
+            Q[last_state, action] += dt / alpha[(last_state, action)]
+            alpha[(last_state, action)] += 1
 
-                last_state = new_state
-
-            for key, value in Q.items():
-                Q_f[key] += value
+            last_state = new_state
 
         best_opponent = {state: None for state in self.states.keys()}
         for state in best_opponent.keys():
@@ -438,15 +429,15 @@ class gramSyntax(gramListener):
                 continue
 
             act_max = self.states_action[state][0]
-            Q_max = Q_f[(state, act_max)]
+            Q_max = Q[(state, act_max)]
             for act in self.states_action[state][1:]:
-                if Q_f[(state, act)] > Q_max:
+                if Q[(state, act)] > Q_max:
                     act_max = act
-                    Q_max = Q_f[(state, act)]
+                    Q_max = Q[(state, act)]
 
             best_opponent[state] = act_max
 
-        return total_reward, best_opponent, Q_f
+        return total_reward, best_opponent, Q
 
     def init_Q(self) -> dict:
         Q = {}

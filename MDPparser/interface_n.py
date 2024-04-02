@@ -301,13 +301,34 @@ def QlearningWindow(main_window, state):
     qlearningwindow = Toplevel(main_window)
     qlearningwindow.title('Qlearning')
 
-    total_reward, opponent, Qf = state.Q_learning()
+    nb_simulation = StringVar()
+    label_nb_simulation = Label(qlearningwindow,
+                                text="Choisissez un nombre de simulation")
+    label_nb_simulation.pack()
+    box_nb_simulation = Entry(qlearningwindow,
+                              textvariable=nb_simulation)
+    box_nb_simulation.pack()
+
+    button_simulation = Button(qlearningwindow,
+                               text="Lancer la simulation",
+                               command=lambda: Qlearning_affiche(
+                                   qlearningwindow,
+                                   state,
+                                   int(nb_simulation.get())
+                               ))
+
+    button_simulation.pack()
+
+
+def Qlearning_affiche(main_window, state, nb_simulation):
+
+    total_reward, opponent, Qf = state.Q_learning(n_tot=nb_simulation)
 
     text = "Q value pour les différents couples état.action : \n"
     for state_ in list(state.states.keys()):
         if state.states[state_] == 2:
             for action in state.states_action[state_]:
-                text += f'Q({state_}, {action}) : {Qf[state_, action]}, '
+                text += f'Q({state_}, {action}) : {Qf[state_, action]}\n '
         elif state.states[state_] == 1:
             action = None
             text += f'Q({state_}, {action}) : {Qf[state_, action]}, '
@@ -318,7 +339,7 @@ def QlearningWindow(main_window, state):
 
     text += f'La récompense totale obtenue sur la simulation est {total_reward}'
 
-    label = Label(qlearningwindow,
+    label = Label(main_window,
                   text=text)
     label.pack()
 
@@ -402,7 +423,8 @@ def wrapper_main():
     try:
         main()
     finally:
-        path = pathlib.Path("test.png")
+        path = pathlib.Path.cwd()
+        path = path / "test.png"
         if path.exists():
             path.unlink()
 
